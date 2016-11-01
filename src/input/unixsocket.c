@@ -246,3 +246,4 @@ void e1inp_ericsson_set_altc(struct e1inp_line *unixline, int superchannel)
 
 	unixsocket_write_msg(msg, &config->fd);
 }
+
