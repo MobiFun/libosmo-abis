@@ -237,7 +237,6 @@ void e1inp_ericsson_set_altc(struct e1inp_line *unixline, int superchannel)
 		return;
 	}
 
-
 	msg = msgb_alloc_headroom(200, 100, "ALTTC");
 
 	/* magic */
