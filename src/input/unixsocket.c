@@ -44,14 +44,23 @@ struct unixsocket_line {
 	struct osmo_fd fd;
 };
 
+static int unixsocket_line_update(struct e1inp_line *line);
+
 static int ts_want_write(struct e1inp_ts *e1i_ts);
 
 static int unixsocket_exception_cb(struct osmo_fd *bfd)
 {
+	int rc;
 	struct e1inp_line *line = bfd->data;
 	LOGP(DLINP, LOGL_ERROR, "unixsocket: closing socket. Exception cb called.\n");
 
+
 	close(bfd->fd);
+
+	if(osmo_fd_registered(&bfd->fd))
+		osmo_fd_unregister(&bfd->fd);
+
+	//unixsocket_line_update(line);
 
 	return 0;
 }
@@ -180,12 +189,17 @@ static int unixsocket_line_update(struct e1inp_line *line)
 	ret = osmo_sock_unix_init(SOCK_SEQPACKET, 0, sock_path, OSMO_SOCK_F_CONNECT);
 
 	if (ret < 0) {
+		LOGP(DLINP, LOGL_NOTICE, "unixsocket: sock init failed\n");
 		talloc_free(config);
 		return ret;
 	}
 
+	if(osmo_fd_registered(&config->fd))
+		osmo_fd_unregister(&config->fd);
+
 	config->fd.fd = ret;
 	if (osmo_fd_register(&config->fd) < 0) {
+		LOGP(DLINP, LOGL_NOTICE, "unixsocket: sock registration failed\n");
 		close(config->fd.fd);
 		return -EIO;
 	}
