@@ -106,7 +106,7 @@ const struct lapd_profile lapd_profile_abis = {
 
 const struct lapd_profile lapd_profile_abis_ericsson = {
 	.k		= LAPD_SET_K(2,1),
-	.n200		= 300,
+	.n200		= 50,
 	.n201		= 260,
 	.n202		= 0, /* infinite */
 	.t200_sec	= 0,	.t200_usec	= 300000,
@@ -229,8 +229,9 @@ static struct lapd_sap *lapd_sap_alloc(struct lapd_tei *teip, uint8_t sapi)
 	if (!sap)
 		return NULL;
 
-	LOGP(DLLAPD, LOGL_NOTICE, "LAPD Allocating SAP for SAPI=%u / TEI=%u\n",
-		sapi, teip->tei);
+	LOGP(DLLAPD, LOGL_NOTICE,
+	     "LAPD Allocating SAP for SAPI=%u / TEI=%u (dl=%p, sap=%p)\n",
+	     sapi, teip->tei, &sap->dl, sap);
 
 	sap->sapi = sapi;
 	sap->tei = teip;
@@ -266,6 +267,10 @@ static struct lapd_sap *lapd_sap_alloc(struct lapd_tei *teip, uint8_t sapi)
 /* Free SAP instance, including the datalink */
 static void lapd_sap_free(struct lapd_sap *sap)
 {
+	LOGP(DLLAPD, LOGL_NOTICE,
+	     "LAPD Freeing SAP for SAPI=%u / TEI=%u (dl=%p, sap=%p)\n",
+	     sap->sapi, sap->tei->tei, &sap->dl, sap);
+
 	/* free datalink structures and timers */
 	lapd_dl_exit(&sap->dl);
 
@@ -703,3 +708,4 @@ void lapd_instance_free(struct lapd_instance *li)
 
 	talloc_free(li);
 }
+
